@@ -1,0 +1,3 @@
+------ Documentation du Programme ------
+
+L'objectif de ce programme est de justifier un texte. 
