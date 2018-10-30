@@ -1,21 +1,13 @@
-CC = clang
-LD = clang
+all: bin/AODjustify
 
-CFLAGS = -Wall -Wextra -O0 -g -Iinclude
-LDFLAGS = -lm
-DEBUG = -DDEBUG -O0
+AODjustify: bin/AODjustify.o
+	gcc -o AODjustify AODjustify.o
 
-# Par défaut, on compile tous les fichiers source (.c) qui se trouvent dans le
-# répertoire bin/
-SRC_FILES=$(wildcard bin/*.c)
-
-# Par défaut, la compilation de bin/toto.c génère le fichier objet bin/toto.o
-OBJ_FILES=$(patsubst bin/%.c,bin/%.o,$(SRC_FILES))
-
-src/%.o: src/%.c
-	$(CC) $(CFLAGS) $< -o $@
+AODjustify.o: bin/AODjustify.c
+	gcc -o bin/AODjustify.o -c bin/AODjustify.c -W -Wall -ansi -pedantic
 
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJ_FILES)
+	rm -rf bin/*.o
+	rm -rf bin/AODjustify
