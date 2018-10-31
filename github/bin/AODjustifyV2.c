@@ -96,6 +96,56 @@ void cout_minimal1(char **tableau_mots, long *tab_coutmin, int *tab_argmin, int 
 }
 
 
+void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
+  printf("debut\n" );
+  char *ligne = malloc(M*sizeof(char));
+  int debut = 0;
+  int temp;
+  int fin = tab_argmin[0];
+  while (fin != NB_MOT-1) {
+    for (size_t i = debut; i < fin; i++) {
+      strcat(ligne, tableau_mots[i]);
+      strcat(ligne, " ");
+    }
+    // printf("%d\n", fin);
+    // int nombre_characteres = strlen(ligne);
+    // int nombres_espaces = M - strlen(ligne);
+    // printf("%d\n", nombre_characteres);
+    // strcpy(ligne, "");
+    // printf("ta mere\n" );
+    // while (nombre_characteres < M) {
+    //   for (size_t i = debut; i < fin; i++) {
+    //     // printf("on ajoute un mpt %s\n", tableau_mots[i]);
+    //     strcat(ligne, tableau_mots[i]);
+    //     strcat(ligne, " ");
+    //     if (nombres_espaces > 0) {
+    //       strcat(ligne, " ");
+    //       nombres_espaces--;
+    //       nombre_characteres ++;
+    //       // printf("on rajoute un  \n");
+    //     }
+    //   }
+    // }
+    // fprintf(stderr, "%s\n", ligne);
+    // for (size_t i = 0; i <= M; i++) {
+    //   fputc(ligne[i], sortie);
+    //   // printf("%c\n", ligne[i]);
+    // }
+    // fputc(13, sortie);
+    fprintf(stderr, "%s\n", ligne);
+    fputs(ligne, sortie);
+    fputc(13, sortie);
+    strcpy(ligne, "");
+    temp = fin;
+    debut = fin;
+    fin = tab_argmin[temp];
+  }
+  printf("fin\n");
+}
+
+
+
+
 int main(int argc, char const *argv[]) {
   FILE* fichier = NULL;
   FILE* sortie = NULL;
@@ -151,5 +201,14 @@ int main(int argc, char const *argv[]) {
     cout_minimal1(tableau_mots, tab_coutmin, tab_argmin, M, indice);
   }
   printf("le cout minimal est %ld\n", tab_coutmin[0]);
+  justification(tableau_mots, tab_argmin, M, sortie);
+
+//   for (size_t i = 0; i < NB_MOT; i++) {
+// printf("%d\n", tab_argmin[i]);  }
+  fclose(fichier);
+  // fclose(sortie);
+
   return 0;
 }
+
+//la phrase 2 elle commence a argmin(0) la deuxieme argmin(8)
