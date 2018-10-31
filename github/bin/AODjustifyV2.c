@@ -73,7 +73,13 @@ long cout_minimal(struct paragraphe *para, int i, int M, long mini){
 }
 
 void cout_minimal1(char **tableau_mots, long *tab_coutmin, int *tab_argmin, int M, int i) {
-  if (i == NB_MOT - 1) {
+  //On vérifie si on est à la première ligne
+  int delta_in = 0;
+  for (int indice = i; indice<NB_MOT; indice++) {
+    delta_in += strlen(tableau_mots[indice]);
+  }
+  delta_in += NB_MOT - i - 1;
+  if (M - delta_in >= 0) {
     //Si on cherche le cout minimal du dernier mot
     tab_coutmin[i] = 0;
     tab_argmin[i] = i;
