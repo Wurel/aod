@@ -28,15 +28,32 @@ char * get_mot(int M, FILE *fichier){
       NB_MOT ++;
       return mot;
     }
-    if (tampon == 13) {
+    if (tampon == 10) {
       printf("une entree\n");
+      // mot[i] = tampon;
+      mot = malloc(M*sizeof(char));
+      i = 0;
       NB_MOT ++;
+      return mot;
+    }
+
+    //POUR LES TABS?
+    if (tampon == 9) {
+      // printf("oh une tabulation [%c]\n", tampon);
+      // mot[i] = tampon;
+      NB_MOT ++;
+      printf("|%s| %ld\n", mot, strlen(mot));
       return mot;
     }
     mot[i] = tampon;
     i++;
     tampon=fgetc(fichier);
   }
+  printf("[%s]\n", mot);
+  // tampon = fgetc(fichier);
+  // while (tampon == 32 || tampon == 9 || tampon == 13) {
+  //   tampon = fgetc(fichier);
+  // }
   NB_MOT ++;
   return mot;
 }
@@ -47,7 +64,16 @@ long badness(char **tableau_mots, int debut, int fin, int M){
     // printf("%s\n", para->mot);
     longueur += strlen(tableau_mots[i]);
     if(i < fin -1) longueur ++;
-  }
+
+    //POUR LES TAB?
+    for (size_t j = 0; j < strlen(tableau_mots[i]); j++) {
+      if (tableau_mots[i][j] == 9) {
+        longueur = longueur + 3;
+      }
+      /* code */
+    }
+
+    }
   // printf("On a une longueur de %d \n", longueur);
   if (longueur > M) {
     return pow(longueur, 3);
@@ -89,11 +115,11 @@ char * completion(char * ligne, int nombre_characteres, int M, int taille_dernie
   char *nv_ligne = malloc(2*M*sizeof(char));
   char *tampon = malloc(sizeof(char));
   int i = 0;
+  printf("%d\n", nombre_characteres);
   while (nombre_characteres < M) {
     tampon = &ligne[i];
     if (*tampon == 32 && i != 0) {
       nombre_characteres ++;
-      ERREUR ++;
       strncpy(nv_ligne, ligne, i);
       strcat(&nv_ligne[i], " ");
       strncpy(&nv_ligne[i+1], &ligne[i], nombre_characteres - i);
@@ -116,15 +142,22 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
   int temp;
   int fin = tab_argmin[0];
   while (debut != NB_MOT-1 && debut != fin) {
+    int tab = 0;
     printf("%d -> %d\n", debut, fin);
     for (size_t i = debut; i < fin; i++) {
       strcat(ligne, tableau_mots[i]);
       if(i != fin -1)strcat(ligne, " ");
+
+
+
     }
+
+
+
     int nombre_characteres = strlen(ligne);
     // int nombres_espaces = M - strlen(ligne);
     char *nv_ligne = malloc(M*sizeof(char));
-    nv_ligne = completion(ligne, nombre_characteres, M, strlen(tableau_mots[fin-1]));
+    nv_ligne = completion(ligne, nombre_characteres + tab, M, strlen(tableau_mots[fin-1]));
     // fprintf(stderr, "%s\n", ligne);
     // for (size_t i = 0; i <= M; i++) {
     //   fputc(ligne[i], sortie);
