@@ -17,19 +17,22 @@ void compte_mot(int M, FILE *fichier){
     if (tampon == EOF) {
       STATUS = 0;
       NB_MOT ++;
+      break;
     }
     if (tampon == 13) {
       NB_MOT ++;
+      break;
     }
+    tampon=fgetc(fichier);
   }
   NB_MOT ++;
 }
 
 char * get_mot(int M, FILE *fichier){
   char *mot = malloc(M*sizeof(char));
-  int tampon;
+  int tampon = fgetc(fichier);
   int i = 0;
-  while ((tampon=fgetc(fichier)) != 32) {
+  while ((tampon != 32)) {
     if (tampon == EOF) {
       STATUS = 0;
       return mot;
@@ -39,6 +42,7 @@ char * get_mot(int M, FILE *fichier){
     }
     mot[i] = tampon;
     i++;
+    tampon=fgetc(fichier);
   }
   return mot;
 }
@@ -58,6 +62,20 @@ int main(int argc, char const *argv[]) {
   while (STATUS != 0) {
     compte_mot(M, fichier);
   }
-  STATUS = 0;
-  char * tab_mot[] = 
+  rewind(fichier);
+  STATUS = 1;
+  //On cree un tableau avec tous les mots du texte
+  //Il contient NB_MOT ayant une taille inférieur ou égal à M
+  //La taille des mot peut être optimisé
+  int i = 0;
+  char * tab_mot[NB_MOT];
+  while (STATUS != 0) {
+    tab_mot[i] = get_mot(M, fichier);
+    i++;
+  }
+  for (int indice=0; indice<NB_MOT; indice++) {
+    printf("%s; ", tab_mot[indice]);
+  }
+  printf("NB_MOT : %d\n", NB_MOT);
+  return 0;
 }
