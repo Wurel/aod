@@ -149,6 +149,8 @@ int main(int argc, char const *argv[]) {
   // printf("je comprends rien\n" );
   for (int indice=NB_MOT-1; indice>=0; indice--) {
     cout_minimal1(tableau_mots, tab_coutmin, tab_argmin, M, indice);
+    printf("le cout minimal à l'indce %d est %ld\n", indice, tab_coutmin[indice]);
+    printf("L'argmin à l'indce %d est %d\n", indice, tab_argmin[indice]);
   }
   printf("le cout minimal est %ld\n", tab_coutmin[0]);
   return 0;
