@@ -41,22 +41,14 @@ char * get_mot(int M, FILE *fichier){
   return mot;
 }
 
-long cout(struct paragraphe *para, int debut, int fin, int M){
-  for (size_t i = 0; i < debut + 1; i++) {
-    para = para-> suivant;
-  }
+long badness(char **tableau_mots, int debut, int fin, int M){
   int longueur = 0;
   for (size_t i = debut; i < fin; i++) {
-    if (para == NULL) {
-      printf("attention c'est nul\n");
-      exit(1);
-    }
     // printf("%s\n", para->mot);
-    longueur += strlen(para -> mot);
-    para = para -> suivant;
+    longueur += strlen(tableau_mots[i]);
     if(i < fin -1) longueur ++;
   }
-  printf("On a une longueur de %d \n", longueur);
+  // printf("On a une longueur de %d \n", longueur);
   if (longueur > M) {
     return pow(longueur, 3);
   }
@@ -75,12 +67,33 @@ long cout_minimal(struct paragraphe *para, int i, int M, long mini){
   printf("mot de depart %s\n", para->mot);
   for (size_t j = 1; j < NB_MOT-para->place  ; j++) {
     printf("j %ld %d\n", j, NB_MOT-para->place-1);
-    mini = min(cout(para, 0, j, M) + cout_minimal(para, j, M, mini), mini);
+    mini = min(badness(para, 0, j, M) + cout_minimal(para, j, M, mini), mini);
   }
   return mini;
 }
 
-
+void cout_minimal1(char **tableau_mots, long *tab_coutmin, int *tab_argmin, int M, int i) {
+  if (i == NB_MOT - 1) {
+    //Si on cherche le cout minimal du dernier mot
+    tab_coutmin[i] = 0;
+    tab_argmin[i] = i;
+    return;
+  }
+  //On initialise la valeur du min des j à j = i+1
+  long min = tab_coutmin[i+1]+badness(tableau_mots, i, i+1, M);
+  int argmin = i;
+  long val_tempo = 0;
+  for (int j=i+1; j<NB_MOT; j++) {
+    val_tempo = tab_coutmin[j]+badness(tableau_mots, i, j, M);
+    if (val_tempo < min) {
+      //On actualise la valeur du minimum
+      argmin = j;
+      min = val_tempo;
+    }
+  }
+  tab_coutmin[i] = min;
+  tab_argmin[i] = argmin;
+}
 
 
 int main(int argc, char const *argv[]) {
@@ -88,7 +101,6 @@ int main(int argc, char const *argv[]) {
   FILE* sortie = NULL;
   STATUS = 1;
   struct paragraphe *tete = malloc(sizeof(struct paragraphe));
-
   assert(argc == 3);
   fichier = fopen(argv[2], "r");
   sortie = fopen(strcat(argv[2],".out"), "w+");
@@ -132,10 +144,12 @@ int main(int argc, char const *argv[]) {
   for (size_t i = 1; i < NB_MOT; i++) {
     printf("%s\n", tableau_mots[i]);
   }
-
-
+  long *tab_coutmin = malloc(NB_MOT*sizeof(long));
+  int *tab_argmin = malloc(NB_MOT*sizeof(int));
   // printf("je comprends rien\n" );
-  // printf("le cout minimal est %ld\n", cout_minimal(tete, 0, M, INT_MAX));
-
+  for (int indice=NB_MOT-1; indice>=0; indice--) {
+    cout_minimal1(tableau_mots, tab_coutmin, tab_argmin, M, indice);
+  }
+  printf("le cout minimal est %ld\n", tab_coutmin[0]);
   return 0;
 }
