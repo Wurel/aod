@@ -20,9 +20,9 @@ struct paragraphe
 
 char * get_mot(int M, FILE *fichier){
   char *mot = malloc(M*sizeof(char));
-  int tampon;
+  int tampon = fgetc(fichier);
   int i = 0;
-  while ((tampon=fgetc(fichier)) != 32) {
+  while ((tampon != 32)) {
     if (tampon == EOF) {
       STATUS = 0;
       NB_MOT ++;
@@ -35,6 +35,7 @@ char * get_mot(int M, FILE *fichier){
     }
     mot[i] = tampon;
     i++;
+    tampon=fgetc(fichier);
   }
   NB_MOT ++;
   return mot;
@@ -55,7 +56,7 @@ long cout(struct paragraphe *para, int debut, int fin, int M){
     para = para -> suivant;
     if(i < fin -1) longueur ++;
   }
-  // printf("On a une longueur de %d \n", longueur);
+  printf("On a une longueur de %d \n", longueur);
   if (longueur > M) {
     return pow(longueur, 3);
   }
@@ -63,14 +64,18 @@ long cout(struct paragraphe *para, int debut, int fin, int M){
 }
 
 long cout_minimal(struct paragraphe *para, int i, int M, long mini){
+  if (i+1 == NB_MOT) {
+    printf("tandam\n");
+    return 0;
+  }
   while (para -> place != i && para -> place < i) {
     para = para -> suivant;
-    // printf("suivant %d %d \n", para->place, i);
+    printf("suivant %d %d \n", para->place, i);
   }
-  // printf("une iterat\n");
-  for (size_t j = 1; j < NB_MOT-para->place - 1; j++) {
-    printf("j %ld %d\n", j, NB_MOT-para->place);
-    mini = min((cout(para, 0, j, M) + cout_minimal(para, j, M, mini)), mini);
+  printf("mot de depart %s\n", para->mot);
+  for (size_t j = 1; j < NB_MOT-para->place  ; j++) {
+    printf("j %ld %d\n", j, NB_MOT-para->place-1);
+    mini = min(cout(para, 0, j, M) + cout_minimal(para, j, M, mini), mini);
   }
   return mini;
 }
@@ -108,13 +113,23 @@ int main(int argc, char const *argv[]) {
     printf("%s %d\n", nv_para -> mot, nv_para -> place);
     para = nv_para;
   }
+  char *tableau_mots[NB_MOT];
+  para = tete;
+  // for (size_t i = 0; i < NB_MOT; i++) {
+  //   struct paragraphe *nv_para = malloc(sizeof(struct paragraphe));
+  //   para -> suivant = nv_para;
+  //   tableau_mots[i] = malloc(sizeof(char)*strlen(para->mot));
+  //   strcpy(tableau_mots[i],"salut");
+  //   para = nv_para;
+  // }
   // printf("%s\n", tete -> suivant -> mot);
   // printf("%ld\n", cout(tete, 1, 3, M));
-  // printf("nb mots %d\n", NB_MOT);
+  printf("nb mots %d\n", NB_MOT);
+  // printf("%s\n", tableau_mots[2]);
 
 
-  printf("je comprends rien\n" );
-  printf("le cout minimal est %ld\n", cout_minimal(tete->suivant, 5, M, INT_MAX));
+  // printf("je comprends rien\n" );
+  // printf("le cout minimal est %ld\n", cout_minimal(tete, 0, M, INT_MAX));
 
   return 0;
 }

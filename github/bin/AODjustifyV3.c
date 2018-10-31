@@ -56,6 +56,8 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
   while (STATUS != 0) {
-    nv_para -> mot = get_mot(M, fichier);
+    compte_mot(M, fichier);
   }
+  STATUS = 0;
+  char * tab_mot[] = 
 }
