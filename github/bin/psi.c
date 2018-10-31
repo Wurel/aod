@@ -46,8 +46,8 @@ void creation_tab_char(char * nom_fichier) {
 void creation_tab_psi(int m) {
   TAB_PSI = malloc(NB_CHAR*sizeof(int));
   for (int indice=NB_CHAR-1; indice>=0; indice--) {
-    TAB_PSI[indice] = fonction_psi(indice, m);
-    // printf("%d\n", TAB_PSI[indice]);
+    fonction_psi(indice, m);
+    //printf("%d\n", TAB_PSI[indice]);
   }
 }
 
@@ -55,42 +55,30 @@ int fonction_psi(int i, int m) {
   //fonction psi de la correction des profs, solution 2 Q2
   //Elle prend en argument la position dans le tableau du character d'entree
   //On s'occupe déjà du cas nul
-  printf("Indice actuel: %d\n", i);
   if (i == NB_CHAR-1) {
-    TAB_PSI[i] = 0;
-    printf("Indice: %d et Valeur du char: %d\n", i, TAB_CHAR[i]);
     return 0;
   }
   int k = i;
-  while (k<=i+NB_CHAR && k<NB_CHAR) {
-    printf("Indice: %d et Valeur du char: %d\n", k, TAB_CHAR[k]);
+  while (k<=i+m && k<=NB_CHAR) {
+    printf("je suis la\n");
     if (TAB_CHAR[k] == 26) { //26 c'est end of file
-      TAB_PSI[k] = 0;
       return 0;
     }
     k++;
   }
-  // for (int k=i-1; k<=i+m && k<NB_CHAR; k++) {
-  //   printf("Indice: %d et Valeur du char: %d\n", k, TAB_CHAR[k]);
-  //   if (TAB_CHAR[k] == 26) { //26 c'est end of file
-  //     TAB_PSI[k] = 0;
-  //     return 0;
-  //   }
-  // }
   int min = 0; //initialisation temporaire de la valeur min
   int valeur_tempo = 0;
-  for (int k=i; k>i+m; k++) {
-    if (TAB_CHAR[k] == 32) { //On vérifie la condition F(k) isspace
-      if (k == i) {
-        min = TAB_CHAR[k+1] + (m-(k-i))*(m-(k-i))*(m-(k-i)); //initialisation de min
+  for (int j=i; j<=i+m; j++) {
+    if (TAB_CHAR[j] == 32) { //On vérifie la condition F(k) isspace
+      if (j == i) {
+        min = TAB_PSI[j+1] + (m-(j-i))*(m-(j-i))*(m-(j-i)); //initialisation de min
       }
-      valeur_tempo = TAB_CHAR[k+1] + (m-(k-i))*(m-(k-i))*(m-(k-i));
+      valeur_tempo = TAB_PSI[j+1] + (m-(j-i))*(m-(j-i))*(m-(j-i));
       if (valeur_tempo < min) {
         min = valeur_tempo;
       }
     }
   }
-  TAB_PSI[i] = min;
   return min;
 }
 
@@ -106,14 +94,14 @@ int main(int argc, char const *argv[]) {
   for (int indice=0; indice<NB_CHAR; indice++) {
     printf("%d; ", TAB_CHAR[indice]);
   }
-  printf("______________________\n");
+  printf("\n");
   printf("______________________\n");
   printf("______________________\n");
   creation_tab_psi(argv[1]);
   printf("  -- Fonction creation_tab_psi OK \n");
-  // for (int indice=0; indice<NB_CHAR; indice++) {
-  //   printf("%d; ", TAB_PSI[indice]);
-  // }
+  for (int indice=0; indice<NB_CHAR; indice++) {
+    printf("%d; ", TAB_PSI[indice]);
+  }
   free(TAB_PSI);
   free(TAB_CHAR);
   printf("______________________\n");
