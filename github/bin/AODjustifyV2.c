@@ -114,18 +114,24 @@ int main(int argc, char const *argv[]) {
     para = nv_para;
   }
   char *tableau_mots[NB_MOT];
-  para = tete;
-  // for (size_t i = 0; i < NB_MOT; i++) {
-  //   struct paragraphe *nv_para = malloc(sizeof(struct paragraphe));
-  //   para -> suivant = nv_para;
-  //   tableau_mots[i] = malloc(sizeof(char)*strlen(para->mot));
-  //   strcpy(tableau_mots[i],"salut");
-  //   para = nv_para;
-  // }
+  // struct paragraphe *para = malloc(sizeof(struct paragraphe));
+  // para2 = tete;
+  tete = tete -> suivant;
+  for (size_t i = 0; i < NB_MOT-1; i++) {
+    // struct paragraphe *nv_para = malloc(sizeof(struct paragraphe));
+    // para -> suivant = nv_para;
+    // tableau_mots[i] = malloc(sizeof(char)*strlen(tete->mot));
+    tableau_mots[i] = tete->mot;
+    printf("%s\n", tete -> suivant ->mot );
+    // para = nv_para;
+    tete = tete -> suivant;
+  }
   // printf("%s\n", tete -> suivant -> mot);
   // printf("%ld\n", cout(tete, 1, 3, M));
   printf("nb mots %d\n", NB_MOT);
-  // printf("%s\n", tableau_mots[2]);
+  for (size_t i = 1; i < NB_MOT; i++) {
+    printf("%s\n", tableau_mots[i]);
+  }
 
 
   // printf("je comprends rien\n" );
