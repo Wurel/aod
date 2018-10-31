@@ -3,27 +3,88 @@
 #include <assert.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <math.h>
+#include <limits.h>
+#define min(a,b) (a<=b?a:b)
 
 int STATUS = 1;
 int ERREUR = 0;
+int NB_MOT = 0;
 
+struct paragraphe
+{
+    int place;
+    char *mot;
+    struct paragraphe *suivant;
+};
 
 char * get_mot(int M, FILE *fichier){
   char *mot = malloc(M*sizeof(char));
-  int tampon;
+  int tampon = fgetc(fichier);
   int i = 0;
-  while ((tampon=fgetc(fichier)) != 32) {
+  while ((tampon != 32)) {
     if (tampon == EOF) {
       STATUS = 0;
+      NB_MOT ++;
+      return mot;
+    }
+    if (tampon == 13) {
+      printf("une entree\n");
+      NB_MOT ++;
       return mot;
     }
     mot[i] = tampon;
     i++;
+    tampon=fgetc(fichier);
   }
+  NB_MOT ++;
   return mot;
 }
 
-char * justification(char * ligne, int nombre_characteres, int M, int taille_dernier_mot){
+long badness(char **tableau_mots, int debut, int fin, int M){
+  int longueur = 0;
+  for (size_t i = debut; i < fin; i++) {
+    // printf("%s\n", para->mot);
+    longueur += strlen(tableau_mots[i]);
+    if(i < fin -1) longueur ++;
+  }
+  // printf("On a une longueur de %d \n", longueur);
+  if (longueur > M) {
+    return pow(longueur, 3);
+  }
+  return pow((M - longueur), 3);
+}
+
+void cout_minimal1(char **tableau_mots, long *tab_coutmin, int *tab_argmin, int M, int i) {
+  //On vérifie si on est à la première ligne
+  int delta_in = 0;
+  for (int indice = i; indice<NB_MOT; indice++) {
+    delta_in += strlen(tableau_mots[indice]);
+  }
+  delta_in += NB_MOT - i - 1;
+  if (M - delta_in >= 0) {
+    //Si on cherche le cout minimal du dernier mot
+    tab_coutmin[i] = 0;
+    tab_argmin[i] = i;
+    return;
+  }
+  //On initialise la valeur du min des j à j = i+1
+  long min = tab_coutmin[i+1]+badness(tableau_mots, i, i+1, M);
+  int argmin = i;
+  long val_tempo = 0;
+  for (int j=i+1; j<NB_MOT; j++) {
+    val_tempo = tab_coutmin[j]+badness(tableau_mots, i, j, M);
+    if (val_tempo < min) {
+      //On actualise la valeur du minimum
+      argmin = j;
+      min = val_tempo;
+    }
+  }
+  tab_coutmin[i] = min;
+  tab_argmin[i] = argmin;
+}
+
+char * completion(char * ligne, int nombre_characteres, int M, int taille_dernier_mot){
   printf("%s\n", ligne);
   char *nv_ligne = malloc(2*M*sizeof(char));
   char *tampon = malloc(sizeof(char));
@@ -47,10 +108,52 @@ char * justification(char * ligne, int nombre_characteres, int M, int taille_der
   return nv_ligne;
 }
 
+
+void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
+  printf("debut\n" );
+  char *ligne = malloc(M*sizeof(char));
+  int debut = 0;
+  int temp;
+  int fin = tab_argmin[0];
+  while (debut != NB_MOT-1 && debut != fin) {
+    printf("%d -> %d\n", debut, fin);
+    for (size_t i = debut; i < fin; i++) {
+      strcat(ligne, tableau_mots[i]);
+      if(i != fin -1)strcat(ligne, " ");
+    }
+    int nombre_characteres = strlen(ligne);
+    // int nombres_espaces = M - strlen(ligne);
+    char *nv_ligne = malloc(M*sizeof(char));
+    nv_ligne = completion(ligne, nombre_characteres, M, strlen(tableau_mots[fin-1]));
+    // fprintf(stderr, "%s\n", ligne);
+    // for (size_t i = 0; i <= M; i++) {
+    //   fputc(ligne[i], sortie);
+    //   // printf("%c\n", ligne[i]);
+    // }
+    // fputc(13, sortie);
+    fprintf(stderr, "%s\n", ligne);
+    fputs(ligne, sortie);
+    fputc(13, sortie);
+    strcpy(ligne, "");
+    temp = fin;
+    debut = fin;
+    fin = tab_argmin[temp];
+  }
+  //Est ce qu'il reste des mots ?
+  for (size_t i = fin; i < NB_MOT; i++) {
+    fputs(strcat(tableau_mots[i], " "), sortie);
+  }
+  printf("fin %d\n", fin);
+}
+
+
+
+
 int main(int argc, char const *argv[]) {
   FILE* fichier = NULL;
   FILE* sortie = NULL;
   STATUS = 1;
+  struct paragraphe *tete = malloc(sizeof(struct paragraphe));
   assert(argc == 3);
   fichier = fopen(argv[2], "r");
   sortie = fopen(strcat(argv[2],".out"), "w+");
@@ -63,40 +166,54 @@ int main(int argc, char const *argv[]) {
     printf("ntm\n");
     exit(1);
   }
-  while(nombre_characteres <= M){
-    mot = get_mot(M, fichier);
-    if(nombre_characteres < M - strlen(mot)&& nombre_characteres != 0){
-      ligne = strcat(ligne, " ");
-      nombre_characteres ++;
-    }
-    if(STATUS == 0){
-      ligne = strcat(ligne, mot);
-      // ligne = justification(l  igne, nombre_characteres, M);
-      fputs(ligne, sortie);
-      // fputc(EOF, sortie);
-      printf("ERREUR %d\n", ERREUR);
-      fclose(fichier);
-      fclose(sortie);
-      return 0;
-    };
-    if (nombre_characteres + strlen(mot) > M) {
-      ligne = justification(ligne, nombre_characteres, M, strlen(mot));
-      fputs(ligne, sortie);
-      fputc(13, sortie);
-      nombre_characteres = 0;
-      free(ligne);
-      ligne = malloc(M*sizeof(char));
-    }
-    if (nombre_characteres + strlen(mot) == M) {
-      strcat(ligne, mot);
-      fputs(ligne, sortie);
-      fputc(13, sortie);
-      nombre_characteres = 0;
-      free(ligne);
-      ligne = malloc(M*sizeof(char));
-      continue;
-    }
-    ligne = strcat(ligne, mot);
-    nombre_characteres += strlen(mot);
+  struct paragraphe *para = malloc(sizeof(struct paragraphe));
+  para = tete;
+  para -> place = -1;
+  while (STATUS != 0) {
+    struct paragraphe *nv_para = malloc(sizeof(struct paragraphe));
+    para -> suivant = nv_para;
+    nv_para -> mot = malloc(sizeof(char) * M);
+    nv_para -> place = para -> place + 1 ;
+    nv_para -> mot = get_mot(M, fichier);
+    printf("%s %d\n", nv_para -> mot, nv_para -> place);
+    para = nv_para;
   }
+  char *tableau_mots[NB_MOT];
+  // struct paragraphe *para = malloc(sizeof(struct paragraphe));
+  // para2 = tete;
+  tete = tete -> suivant;
+  for (size_t i = 0; i < NB_MOT; i++) {
+      // struct paragraphe *nv_para = malloc(sizeof(struct paragraphe));
+      // para -> suivant = nv_para;
+      // tableau_mots[i] = malloc(sizeof(char)*strlen(tete->mot));
+      printf("%s\n", tete ->mot );
+      tableau_mots[i] = tete->mot;
+      // para = nv_para;
+      tete = tete -> suivant;
+    }
+  // printf("%s\n", tete -> suivant -> mot);
+  // printf("%ld\n", cout(tete, 1, 3, M));
+  printf("nb mots %d\n", NB_MOT);
+  for (size_t i = 1; i < NB_MOT; i++) {
+    printf("%s\n", tableau_mots[i]);
+  }
+  long *tab_coutmin = malloc(NB_MOT*sizeof(long));
+  int *tab_argmin = malloc(NB_MOT*sizeof(int));
+  // printf("je comprends rien\n" );
+  for (int indice=NB_MOT-1; indice>=0; indice--) {
+    cout_minimal1(tableau_mots, tab_coutmin, tab_argmin, M, indice);
+    // printf("le cout minimal à l'indce %d est %ld\n", indice, tab_coutmin[indice]);
+    // printf("L'argmin à l'indce %d est %d\n", indice, tab_argmin[indice]);
+  }
+  printf("le cout minimal est %ld\n", tab_coutmin[0]);
+  justification(tableau_mots, tab_argmin, M, sortie);
+  // printf("Le dernier mot est : %s \n", tableau_mots[NB_MOT - 1]);
+//   for (size_t i = 0; i < NB_MOT; i++) {
+// printf("%d\n", tab_argmin[i]);  }
+  fclose(fichier);
+  // fclose(sortie);
+
+  return 0;
 }
+
+//la phrase 2 elle commence a argmin(0) la deuxieme argmin(8)
