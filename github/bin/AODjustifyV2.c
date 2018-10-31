@@ -55,25 +55,14 @@ long badness(char **tableau_mots, int debut, int fin, int M){
   return pow((M - longueur), 3);
 }
 
-long cout_minimal(struct paragraphe *para, int i, int M, long mini){
-  if (i+1 == NB_MOT) {
-    printf("tandam\n");
-    return 0;
-  }
-  while (para -> place != i && para -> place < i) {
-    para = para -> suivant;
-    printf("suivant %d %d \n", para->place, i);
-  }
-  printf("mot de depart %s\n", para->mot);
-  for (size_t j = 1; j < NB_MOT-para->place  ; j++) {
-    printf("j %ld %d\n", j, NB_MOT-para->place-1);
-    mini = min(badness(para, 0, j, M) + cout_minimal(para, j, M, mini), mini);
-  }
-  return mini;
-}
-
 void cout_minimal1(char **tableau_mots, long *tab_coutmin, int *tab_argmin, int M, int i) {
-  if (i == NB_MOT - 1) {
+  //On vérifie si on est à la première ligne
+  int delta_in = 0;
+  for (int indice = i; indice<NB_MOT; indice++) {
+    delta_in += strlen(tableau_mots[indice]);
+  }
+  delta_in += NB_MOT - i - 1;
+  if (M - delta_in >= 0) {
     //Si on cherche le cout minimal du dernier mot
     tab_coutmin[i] = 0;
     tab_argmin[i] = i;
@@ -95,6 +84,30 @@ void cout_minimal1(char **tableau_mots, long *tab_coutmin, int *tab_argmin, int 
   tab_argmin[i] = argmin;
 }
 
+char * completion(char * ligne, int nombre_characteres, int M, int taille_dernier_mot){
+  printf("%s\n", ligne);
+  char *nv_ligne = malloc(2*M*sizeof(char));
+  char *tampon = malloc(sizeof(char));
+  int i = 0;
+  while (nombre_characteres < M) {
+    tampon = &ligne[i];
+    if (*tampon == 32 && i != 0) {
+      nombre_characteres ++;
+      ERREUR ++;
+      strncpy(nv_ligne, ligne, i);
+      strcat(&nv_ligne[i], " ");
+      strncpy(&nv_ligne[i+1], &ligne[i], nombre_characteres - i);
+      strcpy(ligne, nv_ligne);
+      i++;
+    }
+    i ++;
+    if (i > M - taille_dernier_mot) {
+      i = 0;
+    }
+  }
+  return nv_ligne;
+}
+
 
 void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
   printf("debut\n" );
@@ -102,30 +115,16 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
   int debut = 0;
   int temp;
   int fin = tab_argmin[0];
-  while (fin != NB_MOT-1) {
+  while (debut != NB_MOT-1 && debut != fin) {
+    printf("%d -> %d\n", debut, fin);
     for (size_t i = debut; i < fin; i++) {
       strcat(ligne, tableau_mots[i]);
-      strcat(ligne, " ");
+      if(i != fin -1)strcat(ligne, " ");
     }
-    // printf("%d\n", fin);
-    // int nombre_characteres = strlen(ligne);
+    int nombre_characteres = strlen(ligne);
     // int nombres_espaces = M - strlen(ligne);
-    // printf("%d\n", nombre_characteres);
-    // strcpy(ligne, "");
-    // printf("ta mere\n" );
-    // while (nombre_characteres < M) {
-    //   for (size_t i = debut; i < fin; i++) {
-    //     // printf("on ajoute un mpt %s\n", tableau_mots[i]);
-    //     strcat(ligne, tableau_mots[i]);
-    //     strcat(ligne, " ");
-    //     if (nombres_espaces > 0) {
-    //       strcat(ligne, " ");
-    //       nombres_espaces--;
-    //       nombre_characteres ++;
-    //       // printf("on rajoute un  \n");
-    //     }
-    //   }
-    // }
+    char *nv_ligne = malloc(M*sizeof(char));
+    nv_ligne = completion(ligne, nombre_characteres, M, strlen(tableau_mots[fin-1]));
     // fprintf(stderr, "%s\n", ligne);
     // for (size_t i = 0; i <= M; i++) {
     //   fputc(ligne[i], sortie);
@@ -140,7 +139,12 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
     debut = fin;
     fin = tab_argmin[temp];
   }
-  printf("fin\n");
+
+  // Est ce qu'il reste des mots ?
+  // for (size_t i = fin; i < NB_MOT; i++) {
+  //   fputs(tableau_mots[i], sortie);
+  // }
+  printf("fin %d\n", fin);
 }
 
 
@@ -199,6 +203,8 @@ int main(int argc, char const *argv[]) {
   // printf("je comprends rien\n" );
   for (int indice=NB_MOT-1; indice>=0; indice--) {
     cout_minimal1(tableau_mots, tab_coutmin, tab_argmin, M, indice);
+    // printf("le cout minimal à l'indce %d est %ld\n", indice, tab_coutmin[indice]);
+    // printf("L'argmin à l'indce %d est %d\n", indice, tab_argmin[indice]);
   }
   printf("le cout minimal est %ld\n", tab_coutmin[0]);
   justification(tableau_mots, tab_argmin, M, sortie);
