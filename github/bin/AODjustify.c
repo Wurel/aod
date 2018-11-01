@@ -30,8 +30,9 @@ char * get_mot(int M, FILE *fichier){
     }
     if (tampon == 10) {
       printf("une entree\n");
+      printf("[%s]\n", mot);
       // mot[i] = tampon;
-      mot = malloc(M*sizeof(char));
+      // mot = malloc(M*sizeof(char));
       i = 0;
       NB_MOT ++;
       return mot;
