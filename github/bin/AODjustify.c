@@ -36,12 +36,10 @@ char * get_mot(int M, FILE *fichier){
     }
     if (TAMPON == 10 && PREC_TAMPON == 10) {
       STATUS_PARAGRAPHE = 0;
-      printf("----- IL Y A UN NOUVEAU PARAGRAPHE ----- \n");
     }
     if (TAMPON == 10) {
       i = 0;
       NB_MOT ++;
-      // printf("[%s]\n", mot);
       return mot;
     }
     //POUR LES TABS?
@@ -54,7 +52,6 @@ char * get_mot(int M, FILE *fichier){
     PREC_TAMPON = TAMPON;
     TAMPON=fgetc(fichier);
   }
-  // printf("[%s]\n", mot);
   NB_MOT ++;
   return mot;
 }
@@ -62,20 +59,16 @@ char * get_mot(int M, FILE *fichier){
 long badness(char **tableau_mots, int debut, int fin, int M){
   int longueur = 0;
   for (size_t i = debut; i < fin; i++) {
-    // printf("%s\n", para->mot);
     longueur += strlen(tableau_mots[i]);
     if(i < fin -1) longueur ++;
-
     //POUR LES TAB?
     for (size_t j = 0; j < strlen(tableau_mots[i]); j++) {
       if (tableau_mots[i][j] == 9) {
         longueur = longueur + 3;
       }
-      /* code */
     }
 
     }
-  // printf("On a une longueur de %d \n", longueur);
   if (longueur > M) {
     return pow(longueur, 3);
   }
@@ -135,7 +128,6 @@ char * completion(char * ligne, int nombre_characteres, int M, int taille_dernie
 
 
 void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
-  printf("debut\n" );
   char *ligne = malloc(M*sizeof(char));
   int debut = 0;
   int temp;
@@ -149,7 +141,6 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
     int nombre_characteres = strlen(ligne);
     char *nv_ligne = malloc(M*sizeof(char));
     nv_ligne = completion(ligne, nombre_characteres + tab, M, strlen(tableau_mots[fin-1]));
-    // fprintf(stderr, "%s\n", ligne);
     fputs(ligne, sortie);
     fputc(13, sortie);
     strcpy(ligne, "");
@@ -168,6 +159,7 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
 int main(int argc, char const *argv[]) {
   FILE* fichier = NULL;
   FILE* sortie = NULL;
+  long norme3 = 0;
   STATUS = 1;
   assert(argc == 3);
   fichier = fopen(argv[2], "r");
@@ -186,7 +178,7 @@ int main(int argc, char const *argv[]) {
     int nombre_characteres = 0;
     if (fichier == NULL)
     {
-      printf("ERROR : Le fichier d'entrée n'existe pas...\n");
+      fprintf(stderr, "AODjustify ERROR> Le fichier d'entrée n'existe pas...\n");
       exit(1);
     }
     struct paragraphe *para = malloc(sizeof(struct paragraphe));
@@ -206,25 +198,20 @@ int main(int argc, char const *argv[]) {
           tableau_mots[i] = tete->mot;
           tete = tete -> suivant;
       }
-      // printf("\n \n");
       long *tab_coutmin = malloc(NB_MOT*sizeof(long));
       int *tab_argmin = malloc(NB_MOT*sizeof(int));
       for (int indice=NB_MOT-1; indice>=0; indice--) {
         cout_minimal1(tableau_mots, tab_coutmin, tab_argmin, M, indice);
       }
-      printf("le cout minimal est %ld\n", tab_coutmin[0]);
+      norme3 += tab_coutmin[0];
       justification(tableau_mots, tab_argmin, M, sortie);
       for (size_t i = 0; i < NB_MOT; i++) {
         strcpy(tableau_mots[i], "");
       }
-      // free(tableau_mots); //La je free quelque chose qui n'a pas été malloc...
       free(tab_argmin);
       free(tab_coutmin);
-      fprintf(stderr, "on arrive\n" );
-
     }
+    fprintf(stderr, "AODjustify CORRECT> la norme 3 du fichier vaut %ld\n", norme3);
     fclose(fichier);
     return 0;
 }
-
-//la phrase 2 elle commence a argmin(0) la deuxieme argmin(8)
