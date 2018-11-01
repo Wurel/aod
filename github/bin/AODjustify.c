@@ -8,8 +8,8 @@
 #define min(a,b) (a<=b?a:b)
 
 int STATUS = 1;
-int ERREUR = 0;
 int NB_MOT = 0;
+int PAR = 0;
 
 struct paragraphe
 {
