@@ -1,3 +1,22 @@
------- Documentation du Programme ------
+----------------------------------------------------------------------------------------
+				Documentation du Programme
+----------------------------------------------------------------------------------------
 
-L'objectif de ce programme est de justifier un texte. 
+L'objectif de ce programme est de justifier un texte. Il utilise la programmation dynamique par trouver une solution au problème d'optimalité. 
+
+Par compiler : un simple make dans le répertoire principale. "make clean" permet de supprimer l'executable.
+
+Pour executer le programme sur un fichier d'entrée : ./AODjustify <M> <nom_du_fichier>
+Il faut pour executer se trouver dans le repertoire bin/ et que le fichier d'entrée soit aussi dans le répertoire bin/.
+
+En sortie : un fichier dans le répertoire /bin nommé nom_du_fichier.out.
+Sur la sortie stderr :
+- Soit AODjustify CORRECT> suivi de la norme 3 du fichier produit au format ISO-8859-1.
+— soit AODjustify ERREUR> suivi d’un message précisant l’erreur.
+
+Description du programme :
+Le programme contient un seul fichier .c. On a définit une structure paragraphe qui nous à permit pas la suite de créer un tableau de chaîne de caractère contenant tous les mots du paragraphe qu'on est en train de traiter. On a utilisé des variables globales pour définir des conditions d'arrêt notamment pour séparer le texte d'entrée en paragraphe et pour arrêter le programme lorsqu'on arrive à la fin du fichier c'est la variable iND (avec mmap on ne peut faire une boucle while qui s'arrête à EOF mais comparer la taille du fichier et l'indice globale de parcours du fichier). Par la suite, pour chaque paragraphe, on crée un tableau contenant donc les mots du paragraphes, un tableau de tous les cout minimaux par chaque sous-paragraphes commençant par le mot i pour tout i indice du tableau des mots du paragraphes. Les coûts min sont calculés avec mémoïsation. De plus, on crée un autre tableau qui stocke le tableau des pointeur parent (tableau argmin) de i pour i un indice dans le tableau de mot du paragraphe. Les coût minimaux sont calculé avec la fonction coutminimal1 (c'est par ailleurs aussi cette fonction qui remplit le tableau des pointeur parent argmin). Un fois cela fait on connait précisément par quel mot devrait commencer chaque ligne du paragraphe justifié. Ainsi on peut utiliser la fonction justification() qui permet d'écrire dans le fichier de sortie des lignes justifiées avec le bon nombre(M) de caractères. On libère tous les tableaux créés et le programme écrit avec succès dans la sortie stderr.
+
+
+
+  

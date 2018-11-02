@@ -11,6 +11,7 @@
 #include <limits.h>
 #define min(a,b) (a<=b?a:b)
 
+long IND = 0;
 int STATUS = 1;
 int ERREUR = 0;
 int NB_MOT = 0;
@@ -32,14 +33,14 @@ struct paragraphe
     struct paragraphe *suivant;
 };
 
-char * get_mot(int M, FILE* fichier){
+char * get_mot(int M, FILE* fichier, size_t taille_f){
   char *mot = malloc(M*sizeof(char));
   PREC_TAMPON = TAMPON;
-  // read(fichier, &TAMPON, 1);
-  TAMPON = fgetc(fichier);
-  int i = 0;
+  read(fichier, &TAMPON, 1);
+  IND++;
+  long i = 0;
   while ((TAMPON != 32)) {
-    if (TAMPON == EOF) {
+    if (IND == taille_f) {
       STATUS = 0;
       STATUS_PARAGRAPHE = 0;
       NB_MOT ++;
@@ -61,8 +62,8 @@ char * get_mot(int M, FILE* fichier){
     mot[i] = TAMPON;
     i++;
     PREC_TAMPON = TAMPON;
-    TAMPON = fgetc(fichier);
-    // read(fichier, &TAMPON, 1);
+    read(fichier, &TAMPON, 1);
+    IND++;
   }
   NB_MOT ++;
   return mot;
@@ -85,7 +86,6 @@ long badness(char **tableau_mots, int debut, int fin, int M){
         longueur = longueur + 3;
       }
     }
-
     }
   if (longueur > M) {
     return pow(longueur, 3);
@@ -175,30 +175,19 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
 
 
 int main(int argc, char const *argv[]) {
-
-
-  FILE* fichier = NULL;
-
-
   FILE* sortie = NULL;
   long norme3 = 0;
   STATUS = 1;
   assert(argc == 3);
-  // int taille_f = taille_fichier(argv[2]);
-  // int fichier = open(argv[2], O_RDONLY, 0);
-  // void* mmappedData = mmap(NULL, taille_f, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fichier, 0);
-  // assert(mmappedData != MAP_FAILED);
-  //
-  // if (fichier == -1)
-  // {
-  //   fprintf(stderr, "AODjustify ERROR> Le fichier d'entrée n'existe pas...\n");
-  //   exit(1);
-  // }
-
-
-  fichier = fopen(argv[2], "r");
-
-
+  int taille_f = taille_fichier(argv[2]);
+  int fichier = open(argv[2], O_RDONLY, 0);
+  void* mmappedData = mmap(NULL, taille_f, PROT_READ, MAP_PRIVATE, fichier, 0);
+  assert(mmappedData != MAP_FAILED);
+  if (fichier == -1)
+  {
+    fprintf(stderr, "AODjustify ERROR> Le fichier d'entrée n'existe pas...\n");
+    exit(1);
+  }
   sortie = fopen(strcat(argv[2],".out"), "w+");
   int M = atoi(argv[1]);
   while (STATUS != 0) {
@@ -220,7 +209,7 @@ int main(int argc, char const *argv[]) {
         para -> suivant = nv_para;
         nv_para -> mot = malloc(sizeof(char) * M);
         nv_para -> place = para -> place + 1 ;
-        nv_para -> mot = get_mot(M, fichier);
+        nv_para -> mot = get_mot(M, fichier, taille_f);
         para = nv_para;
       }
       char *tableau_mots[NB_MOT];
@@ -243,11 +232,7 @@ int main(int argc, char const *argv[]) {
       free(tab_coutmin);
     }
     fprintf(stderr, "AODjustify CORRECT> la norme 3 du fichier vaut %ld\n", norme3);
-
-    // close(fichier);
-    fclose(fichier);
-
-
+    close(fichier);
     fclose(sortie);
     return 0;
 }
