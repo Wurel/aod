@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <string.h>
 #include <math.h>
 #include <limits.h>
@@ -15,6 +19,12 @@ int STATUS_PARAGRAPHE = 1;
 int PREC_TAMPON = 0; //Cette variable est utilisée pour détecter deux retour à la
 //ligne consécutif
 
+size_t taille_fichier(const char* filename) {
+    struct stat st;
+    stat(filename, &st);
+    return st.st_size;
+}
+
 struct paragraphe
 {
     int place;
@@ -22,9 +32,10 @@ struct paragraphe
     struct paragraphe *suivant;
 };
 
-char * get_mot(int M, FILE *fichier){
+char * get_mot(int M, FILE* fichier){
   char *mot = malloc(M*sizeof(char));
   PREC_TAMPON = TAMPON;
+  // read(fichier, &TAMPON, 1);
   TAMPON = fgetc(fichier);
   int i = 0;
   while ((TAMPON != 32)) {
@@ -50,7 +61,8 @@ char * get_mot(int M, FILE *fichier){
     mot[i] = TAMPON;
     i++;
     PREC_TAMPON = TAMPON;
-    TAMPON=fgetc(fichier);
+    TAMPON = fgetc(fichier);
+    // read(fichier, &TAMPON, 1);
   }
   NB_MOT ++;
   return mot;
@@ -60,6 +72,12 @@ long badness(char **tableau_mots, int debut, int fin, int M){
   int longueur = 0;
   for (size_t i = debut; i < fin; i++) {
     longueur += strlen(tableau_mots[i]);
+    if (strlen(tableau_mots[i]) > M) {
+      fprintf(stderr, "AODjustify ERROR> Le fichier possede un mot de longueur superieur a %d\
+ caracteres : justification sur %d caracteres impossibe\n",\
+       M, M);
+       exit(1);
+    }
     if(i < fin -1) longueur ++;
     //POUR LES TAB?
     for (size_t j = 0; j < strlen(tableau_mots[i]); j++) {
@@ -157,12 +175,30 @@ void justification(char **tableau_mots, int *tab_argmin, int M, FILE *sortie){
 
 
 int main(int argc, char const *argv[]) {
+
+
   FILE* fichier = NULL;
+
+
   FILE* sortie = NULL;
   long norme3 = 0;
   STATUS = 1;
   assert(argc == 3);
+  // int taille_f = taille_fichier(argv[2]);
+  // int fichier = open(argv[2], O_RDONLY, 0);
+  // void* mmappedData = mmap(NULL, taille_f, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fichier, 0);
+  // assert(mmappedData != MAP_FAILED);
+  //
+  // if (fichier == -1)
+  // {
+  //   fprintf(stderr, "AODjustify ERROR> Le fichier d'entrée n'existe pas...\n");
+  //   exit(1);
+  // }
+
+
   fichier = fopen(argv[2], "r");
+
+
   sortie = fopen(strcat(argv[2],".out"), "w+");
   int M = atoi(argv[1]);
   while (STATUS != 0) {
@@ -176,11 +212,6 @@ int main(int argc, char const *argv[]) {
     char *mot = malloc(M*sizeof(char));
     char *ligne = malloc(M*sizeof(char));
     int nombre_characteres = 0;
-    if (fichier == NULL)
-    {
-      fprintf(stderr, "AODjustify ERROR> Le fichier d'entrée n'existe pas...\n");
-      exit(1);
-    }
     struct paragraphe *para = malloc(sizeof(struct paragraphe));
     para = tete;
     para -> place = -1;
@@ -212,6 +243,11 @@ int main(int argc, char const *argv[]) {
       free(tab_coutmin);
     }
     fprintf(stderr, "AODjustify CORRECT> la norme 3 du fichier vaut %ld\n", norme3);
+
+    // close(fichier);
     fclose(fichier);
+
+
+    fclose(sortie);
     return 0;
 }
