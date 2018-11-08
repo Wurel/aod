@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+
+\title{TP Algorithmique et Optimisation Discr\`ete}
+\author{PORA - LEDUCQ }
+\date{October 2018}
+
+\begin{document}
+
+\maketitle
+
+\section{Programme} \\
+
+\item \textbf{Question 5 : } \\ \\
+
+ Le programme contient un seul fichier .c. On a d\'efinit une structure paragraphe qui nous \`a permise pas la suite de cr\'eer un tableau de cha\^ine de caract\`ere contenant tous les mots du paragraphe qu'on est en train de traiter. On a utilis\'e des variables globales pour d\'efinir des conditions d'arr\^et notamment pour s\'eparer le texte d'entr\'ee en paragraphe et pour arr\^eter le programme lorsqu'on arrive \`a la fin du fichier c'est la variable IND (avec mmap on ne peut faire une boucle while qui s'arr\^ete \`a EOF mais comparer la taille du fichier et l'indice globale de parcours du fichier). \\Par la suite, pour chaque paragraphe, on cr\'ee un tableau contenant donc les mots du paragraphes, un tableau de tous les cout minimaux par chaque sous-paragraphes commençant par le mot i pour tout i indice du tableau des mots du paragraphes. Les co\^uts min sont calcul\'es avec m\'emoïsation.\\ De plus, on cr\'ee un autre tableau qui stocke le tableau des pointeur parent (tableau argmin) de i pour i un indice dans le tableau de mot du paragraphe. Les co\^ut minimaux sont calcul\'e avec la fonction coutminimal1 (c'est par ailleurs aussi cette fonction qui remplit le tableau des pointeur parent argmin). \\ Une fois cela fait on connait pr\'ecis\'ement par quel mot devrait commencer chaque ligne du paragraphe justifi\'e. Ainsi on peut utiliser la fonction justification() qui permet d'\'ecrire dans le fichier de sortie des lignes justifi\'ees avec le bon nombre(M) de caract\`eres. On lib\`ere tous les tableaux cr\'e\'es et le programme \'ecrit avec succ\`es dans la sortie stderr.
+\\ \\
+Determinons l'espace m\'emoire n\'ecessaire \`a notre programme afin de justifier un texte de $\#caract\`eres$ caract\`eres : nous utilisons une premi\`ere structure de liste chain\'ee afin de stocker l'ensemble des mots d'un paragraphe chaque mot est stock\'e sur un espace m\'emoire de taille $M.$ On donc $\#caract\`eres$ cellules de listes chain\'ees ayant chacun un mot de taille $M$.\\
+Ensuite nous avons un tableau de mot de taille $\#caract\`eres$ qui r\'ef\'erence les mots de la liste chain\'ee pr\'ec\'edente. \\
+Enfin pour la justification afin de cr\'eer la ligne justifi\'e on la stocke on utilise un espace $n$ suppl\'ementaire.\\
+On a donc besoin d'un espace memoire de taille $O(\#caract\`eres)$.
+\\ \\
+D\'eterminons le nombre d'op\'erations effectu\'es par notre programme dans le pire cas. On se place toujours dans le cas de la justification d'un texte de $n$ mots sur une longueur $M$.\\
+Pour r\'ecup\'erer chaque mot nous utilisons une boucle while nous avons donc $n$ op\'erations qui correspondent \`a la condition du while. pour recup\'erer chacun des caract\`eres des mots nous effectuons des comparaisons afin de savoir si on rencontre des separateurs de mots ce qui ajoute  $\#caract\`eres$ op\'erations.\\
+Pour ce qui concerne du calcul de co\^ut minimal, on utilise deux fonctions : $coutminimal1$ et $badness$. Le calcul de co\^ut minimal se fait par m\'emoïsation. Pour chaque mot indic\'e i du tableau, on appelle la fonction $coutminimal1$. Celle-ci utilise le tableau tab coutmin qu'elle a en argument pour calcul\'e le co\^ut minimal du sous paragraphe suffixe commençant par le mot i en utilisant les co\^ut minimauux calcul\'es pour les sous paragraphe suffixe commençant par des mots se trouvant apr\`es le mot indic\'e i (on fait une recherche de minimumu en utilisant la fonction d'\'evalutation $badness()$). On appelle $n$ fois la fonction $coutminimal1$. Celle si boucle sur les mots se situant, dans le texte, apr\`es le mot d'entr\'ee. On a donc un co\^ut pour cette partie du programme en : $O(n*\sum_{i = 0}^{n} i) = O(n^3)$.\\ Le calcul du co\^ut en m\'emoire demande de la place en m\'emoire suppl\'ementaire, en effet on stocke deux tableaux de taille $n$ contenant des entiers. Ceux sont les tableaux tab argmin (le tableau contenant les pointeurs parents) et le tableau tab coutmin contenant les co\^ut minimaux des sous paragraphes suffixes commençant par tous les mots du texte. \\ \\
+Remarque : c.f. Annexe pour le détail du raisonnement du calcul du coût minimal. \\  \\
+Pour la justification du texte nous avons $n$ op\'erations ce qui correspond \`a une condition de boucle while et au parcours des mots. Il y a \'egalement $\#caract\`eres$ pour placer chacun des caract\`eres et ajouter les espaces sans d\'epasser M caract\`eres.
+Finalement nous avons $O(n^3)$ op\'erations.
+\\ \\
+
+D\'eterminons les d\'efauts de localit\'e produits par notre cache. Nous avons utilis\'es $mmap$ donc le texte dans notre programme a le m\^eme co\^ut d'acc\`es que si il s'agissait d'un tableau de caract\`eres. Tout d'abord nous r\'ecup\'erons les mots du texte en proc\'edant une lecture caract\`eres par caract\`eres on a donc $O(\frac{\#caract\`eres}{L})$ d\'efauts de caches. \\
+Nous recopions ensuite chacun des mots dans un tableau de mots ce qui nous fait $O(\frac{n}{l})$ d\'efauts de localit\'e.\\
+Pour la partie sur le calcul de coût minimum : on utilise trois tableaux qu'on appelle en même temps. Pour le tableau de mot, on peut compter : $O(\frac{n^3}{L^2}$ défauts de localité. Pour les tableaux de coût min et d'argmin : on les appelle $n$ : on peut compter $O(\frac{n}{L})$ pour les deux. Au total, le calcul de coût minimal exige $O(\frac{n^3}{L^2})$ défauts de localité. \\
+Enfin pour la j de l'appeL'utilisation l de la fonction. ustification de texte nous parcourons une nouvelle fois l'ensemble des caract\`eres ce qui correspond a $O(\frac{\#caract\`eres}{L})$ d\'efauts de caches.\\
+Finalement nous avons $O(\frac{n^3}{L^2})$ d\'efauts de localit\'e.
+
+
+
+
+\item \textbf{Question 6 : } \\
+Tableau des temps d'execution pour M = 100:
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+  \hline
+  Texte & Minimum en s & Moyen en s & Maximum en s \\
+  \hline
+  court-plusieurs-paragraphes-ISO-8859-1.in & 0.04 & 0.06 & 0.08 \\
+  court-un-paragraphe.in  & 0.04 & 0.04  & 0.05\\
+  court-un-paragraphe-8859-1.in & 0.03 & 0.04 & 0.06\\
+  foo.in & 0.03 & 0.03 & 0.03\\
+  foo.iso8859-1.in & 0.03 & 0.03 & 0.03\\
+  foo2.iso8859-1.in & 0.02 & 0.03 & 0.03\\
+  longtempsjemesuis.ISO-8859.in & 0.04 & 0.07 & 0.08\\
+  \hline
+\end{tabular}
+\end{center}
+\\ \\
+Comparons avec le nombre de mots et de carat\`eres dans les textes\\
+\begin{tabular}{|l|c|c|c|}
+  \hline
+  Texte & Nombre de caract\`eres & Nombres de mots \\
+  \hline
+  court-plusieurs-paragraphes-ISO-8859-1.in &  3014 & 527\\
+  court-un-paragraphe.in & 633 & 117 \\
+  court-un-paragraphe-8859-1.in & 633 & 117\\
+  foo.in & 51 & 25\\
+  foo.iso8859-1.in & 81 & 36 \\
+  foo2.iso8859-1.in & 164 & 72\\
+  longtempsjemesuis.ISO-8859.in & 3681 & 622\\
+  \hline
+\end{tabular}    
+\\ \\ 
+On peut remarquer une correlation entre le temps d'\'ex\'ecution et la longueur des textes. Il est difficile de donner la d\'ependance entre ces deux tableaux car l'\'echantillon est petit et de plus le temps d'\'ex\'ecution est assez peu pr\'ecis.
+\\ \\
+Analysons le nombre de defauts de caches :\\
+
+\begin{tabular}{|l|c|}
+  \hline
+  Texte & Nombre de d\'efauts de caches \\
+  \hline
+  court-plusieurs-paragraphes-ISO-8859-1.in &  55 000\\
+  court-un-paragraphe.in & 27 000 \\
+  court-un-paragraphe-8859-1.in & 27 000\\
+  foo.in & 7 000\\
+  foo.iso8859-1.in & 7 000 \\
+  foo2.iso8859-1.in & 8 000 \\
+  longtempsjemesuis.ISO-8859.in & 4 423 000 \\
+  \hline
+\end{tabular}  
+\\
+Les premiers textes semblent donner des r\'esultats coherrents mais pas le dernier sans qu'on puisse l'expliquer.
+
+\section{Annexe}
+\\
+Dans cette annexe, nous allons détailler le raisonnement mis en place pour le calcul du co\^ut minimal et l'utilisation des pointeurs parents. Remarque : les indices font r\'ef\'erences à la position des mots dans le tableau.
+On commence avec la fonction $badness(i, j)$ qui nous dit combien ça serait "mal" d'utiliser les mots de i à j comme une ligne. C'est une fonction de p\'enalité. \\
+On a : \\
+% badness(i, j) = 
+% \[
+% \left \{
+% \begin{array}{}
+%      (M - \Delta(i , j))^3 \\
+%      \infty $ si $$ M - \Delta(i , j) > 0 \\
+% \end{array}
+% \right.
+% \]
+% 
+Maintenant on découpe le paragraphe en sous paragraphe suffixe. Il y a $n$ sous paragraphe suffixe. On note $DP(i)$ le coût minimal pour le sous paragraphe suffixe commençant par le mot indicé i. \\ On a alors : 
+$DP(i) = min( DP(j) + badness(i, j) $ pour $j$ allant de $i+1 $ à $ n - 1)$. \\ Avec pour condition d'arrêt : $DP(n-1) = 0$. \\
+De plus, on note : \\
+$parent(i) = argmin ( DP(j) + badness(i, j) $ pour $j$ allant de $i+1 $ à $ n - 1)$. \\
+Ainsi, on sait que la première ligne commence au mot indicé 0. La deuxième ligne doit commencer par le mot indicé $parent(0)$, la troisième commence au mot indicé $parent(parent(0))$ ... \\ 
+
+
+
+\end{document}
+
+
