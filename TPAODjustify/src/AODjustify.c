@@ -128,6 +128,11 @@ char * completion(char * ligne, int nombre_characteres, int M, int taille_dernie
   int i = 0;
   while (nombre_characteres < M) {
     tampon = &ligne[i];
+    if (*tampon == 32 && i == 0) {
+      // strncpy(nv_ligne, ligne[1]);
+      strcpy(ligne, &ligne[1]);
+      nombre_characteres --;
+    }
     if (*tampon == 32 && i != 0) {
       nombre_characteres ++;
       strncpy(nv_ligne, ligne, i);
@@ -182,7 +187,8 @@ int main(int argc, char const *argv[]) {
   long norme3 = 0;
   STATUS = 1;
   assert(argc == 3);
-  int taille_f = taille_fichier(argv[2]);
+  fprintf(stderr, "%s\n", argv[2]);
+  int taille_f = taille_fichier(strcat(argv[2], ".in"));
   int fichier = open(argv[2], O_RDONLY, 0);
   void* mmappedData = mmap(NULL, taille_f, PROT_READ, MAP_PRIVATE, fichier, 0);
   assert(mmappedData != MAP_FAILED);
