@@ -1,7 +1,7 @@
 
 CC = gcc -O3 -std=c99 -lm
 
-all: bin/AODjustify AODrapport-modele.pdf
+all: bin/AODjustify #AODrapport-modele.pdf
 
 doc: src/AODjustify.c  # A COMPLETER
 	doxygen src/AODjustify.c

@@ -187,7 +187,6 @@ int main(int argc, char const *argv[]) {
   long norme3 = 0;
   STATUS = 1;
   assert(argc == 3);
-  fprintf(stderr, "%s\n", argv[2]);
   int taille_f = taille_fichier(strcat(argv[2], ".in"));
   int fichier = open(argv[2], O_RDONLY, 0);
   void* mmappedData = mmap(NULL, taille_f, PROT_READ, MAP_PRIVATE, fichier, 0);
